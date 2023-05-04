@@ -27,14 +27,17 @@ async function comparePasswords(plainPassword, hashedPassword) {
 }
 
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, telefone, address } = req.body;
   const hashedPassword = await hashPassword(password);
 
   try {
+    // Create a new user
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
+      telefone,
+      address,
     });
     res.json(user);
   } catch (error) {
@@ -47,6 +50,7 @@ const login = async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
+    // check if user exists
     const user = await User.findOne({ email });
 
     if (!user) {

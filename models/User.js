@@ -17,6 +17,16 @@ const UserSchema = new mongoose.Schema({
     required: [true, "Please provide password"],
     minlength: 6,
   },
+  telefone: {
+    type: String,
+    required: [true, "Please provide telefone"],
+    minlength: 11,
+  },
+  address: {
+    type: String,
+    required: [true, "Please provide address"],
+    minlength: 3,
+  },
 });
 
 module.exports = mongoose.model("User", UserSchema);
