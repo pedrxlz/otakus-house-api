@@ -25,7 +25,6 @@ const UserSchema = new mongoose.Schema({
   address: {
     type: String,
     required: [true, "Please provide address"],
-    minlength: 3,
   },
 });
 
