@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const bodyParser = require("body-parser");
 
 const app = express();
 
@@ -13,6 +14,7 @@ const authRouter = require("./routes/authRoutes");
 
 app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/api/v1/auth", authRouter);
 
