@@ -33,7 +33,6 @@ const register = async (req, res) => {
   const hashedPassword = await hashPassword(password);
 
   try {
-    // Create a new user
     const user = await User.create({
       name,
       email,
