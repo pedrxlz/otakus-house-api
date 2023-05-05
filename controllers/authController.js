@@ -3,6 +3,8 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { authenticateUser } = require("../middleware/authentication");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 
 async function hashPassword(plainPassword) {
   try {
@@ -105,8 +107,69 @@ const logout = async (req, res) => {
   }
 };
 
+const forgetPassword = async (req, res) => {
+  const { email, telefone } = req.body;
+
+  try {
+    // Verifica se o e-mail corresponde a um usuário registrado
+    const user = await User.findOne({ $or: [{ email }, { telefone }] });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Gera um token aleatório e salva no registro do usuário
+    const token = crypto.randomBytes(20).toString("hex");
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000; // token expira em 1 hora
+    await user.save();
+
+    // Envia um e-mail para o usuário com o link para redefinição de senha
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_ADDRESS,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_ADDRESS,
+      to: user.email,
+      subject: "Link para redefinição de senha",
+      text:
+        "Você está recebendo este e-mail porque solicitou a redefinição de senha para sua conta.\n\n" +
+        "Por favor, clique no link a seguir ou cole-o no seu navegador para concluir o processo:\n\n" +
+        `http://localhost:3000/reset/${token}\n\n` +
+        "Se você não solicitou isso, ignore este e-mail e sua senha permanecerá inalterada.\n",
+    };
+
+    transporter.sendMail(mailOptions, (error, response) => {
+      if (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Internal server error" });
+      } else {
+        console.log("Email sent");
+        console.log(token);
+      }
+
+      transporter.close();
+    });
+
+    res.json({
+      message: "Link para redefinição de senha enviado para o seu e-mail",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const resetPassword = async (req, res) => {};
+
 module.exports = {
   register,
   login,
   logout,
+  forgetPassword,
+  resetPassword,
 };
