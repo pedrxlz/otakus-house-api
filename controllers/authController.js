@@ -1,6 +1,8 @@
+require("dotenv").config();
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { authenticateUser } = require("../middleware/authentication");
 
 async function hashPassword(plainPassword) {
   try {
@@ -47,10 +49,9 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    // check if user exists
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -58,16 +59,52 @@ const login = async (req, res) => {
     }
 
     const isMatch = await comparePasswords(password, user.password);
-    const token = jwt.sign({ id: user._id }, "secret", {
+
+    if (!isMatch) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
+    user.token = token;
+    await user.save();
     res.json({ Valid: isMatch, token });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
-const logout = async (req, res) => {};
+
+const logout = async (req, res) => {
+  try {
+    // Extrai o token do cabeçalho da solicitação
+    const token = req.headers.authorization;
+
+    // Verifica se o token é válido e se está dentro do período de expiração
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decodedToken.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (token !== user.token) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // Invalida o token do usuário no banco de dados
+    user.token = null;
+    await user.save();
+
+    // Retorna uma resposta de sucesso
+    return res.status(200).json({ message: "User successfully logged out" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 module.exports = {
   register,
