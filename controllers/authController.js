@@ -79,10 +79,8 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    // Extrai o token do cabeçalho da solicitação
     const token = req.headers.authorization;
 
-    // Verifica se o token é válido e se está dentro do período de expiração
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decodedToken.id;
     const user = await User.findById(userId);
@@ -95,11 +93,9 @@ const logout = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Invalida o token do usuário no banco de dados
     user.token = null;
     await user.save();
 
-    // Retorna uma resposta de sucesso
     return res.status(200).json({ message: "User successfully logged out" });
   } catch (error) {
     console.log(error);
@@ -111,19 +107,15 @@ const forgetPassword = async (req, res) => {
   const { email, telefone } = req.body;
 
   try {
-    // Verifica se o e-mail corresponde a um usuário registrado
     const user = await User.findOne({ $or: [{ email }, { telefone }] });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Gera um token aleatório e salva no registro do usuário
     const token = crypto.randomBytes(20).toString("hex");
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; // token expira em 1 hora
+    user.token = token;
     await user.save();
 
-    // Envia um e-mail para o usuário com o link para redefinição de senha
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -139,7 +131,7 @@ const forgetPassword = async (req, res) => {
       text:
         "Você está recebendo este e-mail porque solicitou a redefinição de senha para sua conta.\n\n" +
         "Por favor, clique no link a seguir ou cole-o no seu navegador para concluir o processo:\n\n" +
-        `http://localhost:3000/reset/${token}\n\n` +
+        `http://localhost:3001/resetPassword?token=${token}` +
         "Se você não solicitou isso, ignore este e-mail e sua senha permanecerá inalterada.\n",
     };
 
@@ -164,7 +156,27 @@ const forgetPassword = async (req, res) => {
   }
 };
 
-const resetPassword = async (req, res) => {};
+const resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+
+  try {
+    const user = await User.findOne({ token });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const hashedPassword = await hashPassword(password);
+    user.password = hashedPassword;
+    user.token = null;
+    await user.save();
+
+    res.json({ message: "Password successfully updated" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 module.exports = {
   register,
