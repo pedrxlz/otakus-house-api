@@ -2,6 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 
+var cors = require("cors");
+
 const app = express();
 
 const cookieParser = require("cookie-parser");
@@ -13,6 +15,7 @@ const connectDB = require("./db/connect");
 const authRouter = require("./routes/authRoutes");
 const userRouter = require("./routes/userRoutes");
 
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(bodyParser.urlencoded({ extended: true }));
