@@ -131,7 +131,7 @@ const forgetPassword = async (req, res) => {
       text:
         "Você está recebendo este e-mail porque solicitou a redefinição de senha para sua conta.\n\n" +
         "Por favor, clique no link a seguir ou cole-o no seu navegador para concluir o processo:\n\n" +
-        `http://localhost:3001/resetPassword?token=${token}\n` +
+        `http://localhost:3001/reset-password?token=${token}\n` +
         "Se você não solicitou isso, ignore este e-mail e sua senha permanecerá inalterada.\n",
     };
 
