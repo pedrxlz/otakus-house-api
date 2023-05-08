@@ -1,9 +1,8 @@
 require("dotenv").config();
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 
-const authenticateUser = async (req, res) => {
+const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -29,6 +28,8 @@ const authenticateUser = async (req, res) => {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
+
+  next();
 };
 
 module.exports = {
