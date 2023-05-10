@@ -12,13 +12,11 @@ const BookingSchema = new mongoose.Schema({
     required: [true, "Please provide roomId"],
   },
   checkinDate: {
-    type: String,
-    length: 13,
+    type: Date,
     required: [true, "Please provide checkinDate"],
   },
   checkoutDate: {
-    type: String,
-    length: 13,
+    type: Date,
     required: [true, "Please provide checkoutDate"],
   },
   guests: {
