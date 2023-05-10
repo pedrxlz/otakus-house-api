@@ -25,6 +25,9 @@ const authenticateUser = async (req, res, next) => {
 
     req.user = user;
   } catch (error) {
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ error: "Invalid token" });
+    }
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
   }
