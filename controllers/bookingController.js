@@ -102,8 +102,20 @@ const getBooking = async (req, res) => {
   }
 };
 
+const cancelBooking = async (req, res) => {
+  const { id } = req.query;
+  try {
+    const booking = await Booking.deleteOne({ _id: id });
+    return res.json(booking);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   createBooking,
   getUserBookings,
   getBooking,
+  cancelBooking,
 };
