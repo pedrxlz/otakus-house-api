@@ -1,4 +1,5 @@
 const Booking = require("../models/Booking");
+require("../models/Room");
 
 const createBooking = async (req, res) => {
   const { user, room, checkinDate, checkoutDate, guests } = req.body;
@@ -19,10 +20,20 @@ const createBooking = async (req, res) => {
 };
 
 const getUserBookings = async (req, res) => {
-  const { userId } = req.params;
+  const { userId } = req.query;
 
   try {
-    const bookings = await Booking.find({ user: userId });
+    const bookings = await Booking.find({ user: userId })
+      .populate({
+        path: "user",
+        model: "User",
+        select: "name email telefone address",
+      })
+      .populate({
+        path: "room",
+        model: "Room",
+      });
+
     res.json(bookings);
   } catch (error) {
     console.log(error);
