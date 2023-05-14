@@ -70,7 +70,7 @@ const login = async (req, res) => {
     });
     user.token = token;
     await user.save();
-    res.json({ Valid: isMatch, token });
+    res.json(user);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Internal server error" });
