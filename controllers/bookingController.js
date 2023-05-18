@@ -113,9 +113,24 @@ const cancelBooking = async (req, res) => {
   }
 };
 
+const editBooking = async (req, res) => {
+  const { id } = req.query;
+  try {
+    const booking = await Booking.findByIdAndUpdate({ _id: id }, req.body);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+    return res.json({ message: "success" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   createBooking,
   getUserBookings,
   getBooking,
   cancelBooking,
+  editBooking,
 };
