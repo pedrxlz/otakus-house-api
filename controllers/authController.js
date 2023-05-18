@@ -70,7 +70,7 @@ const login = async (req, res) => {
     });
     user.token = token;
     await user.save();
-    res.json({ Valid: isMatch, token });
+    res.json(user);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Internal server error" });
@@ -108,6 +108,7 @@ const forgetPassword = async (req, res) => {
 
   try {
     const user = await User.findOne({ $or: [{ email }, { telefone }] });
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -179,10 +180,29 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const deleteUsers = async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    await user.deleteOne({ email });
+
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
   forgetPassword,
   resetPassword,
+  deleteUsers,
 };
