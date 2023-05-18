@@ -14,9 +14,14 @@ const RoomSchema = new mongoose.Schema({
     minlength: 3,
     maxlength: 50,
   },
-  image: {
+  owner: {
     type: String,
-    required: [true, "Please provide image"],
+    required: [true, "Please provide owner"],
+    minlength: 3,
+    maxlength: 50,
+  },
+  image: {
+    type: Array,
     minlength: 3,
     maxlength: 50,
   },
